@@ -10,9 +10,9 @@ interface UseInViewOptions {
 
 export function useInView<T extends Element = Element>(
   options: UseInViewOptions = {}
-): [RefObject<T>, boolean] {
+): [RefObject<T | null>, boolean] {
   const { threshold = 0.1, once = true, rootMargin = "0px" } = options;
-  const ref = useRef<T>(null);
+  const ref = useRef<T | null>(null);
   const [inView, setInView] = useState(false);
 
   useEffect(() => {
@@ -32,7 +32,9 @@ export function useInView<T extends Element = Element>(
     );
 
     observer.observe(el);
-    return () => observer.unobserve(el);
+    return () => {
+      if (el) observer.unobserve(el);
+    };
   }, [threshold, once, rootMargin]);
 
   return [ref, inView];
