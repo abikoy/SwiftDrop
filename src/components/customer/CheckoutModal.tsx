@@ -138,13 +138,13 @@ export function CheckoutModal({ item, onClose, onSuccess }: Props) {
         phone_number:           form.phone_number.trim(),
         delivery_address:       form.delivery_address.trim(),
         landmark:               form.landmark.trim() || null,
-        food_items_description: `${form.quantity}x ${item.name}`,
+food_items_description: `${form.quantity}x ${item?.name || 'Selected Item'}`,
         payment_method:         form.payment_method,
         total_estimated_price:  total,
         order_status:           "Pending",
         receipt_url,
-        item_name:              item.name,
-        item_image_url:         item.image_url,
+        item_name:              item?.name,
+        item_image_url:         item?.image_url,
         quantity:               form.quantity,
       });
 
