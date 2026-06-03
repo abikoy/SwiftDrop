@@ -136,22 +136,22 @@ if (!item) {
         receipt_url = await uploadFile("payment-receipts", receiptFile, user?.id ?? "anon");
       }
 
-      /* 2. Write order row */
-      const { error: dbErr } = await supabase.from("orders").insert({
-        user_id:                user?.id ?? null,
-        customer_name:          form.customer_name.trim(),
-        phone_number:           form.phone_number.trim(),
-        delivery_address:       form.delivery_address.trim(),
-        landmark:               form.landmark.trim() || null,
-food_items_description: `${form.quantity}x ${item?.name || 'Selected Item'}`,
-        payment_method:         form.payment_method,
-        total_estimated_price:  total,
-        order_status:           "Pending",
-        receipt_url,
-        item_name:              item?.name,
-        item_image_url:         item?.image_url,
-        quantity:               form.quantity,
-      });
+     /* 2. Write order row */
+const { error: dbErr } = await supabase.from("orders").insert({
+  user_id:                user?.id ?? null,
+  customer_name:          form.customer_name.trim(),
+  phone_number:           form.phone_number.trim(),
+  delivery_address:       form.delivery_address.trim(),
+  landmark:               form.landmark.trim() || null,
+  food_items_description: `${form.quantity}x ${item ? item.name : 'Selected Item'}`,
+  payment_method:         form.payment_method,
+  total_estimated_price:  total,
+  order_status:           "Pending",
+  receipt_url:            receipt_url || null,
+  item_name:              item ? item.name : null,
+  item_image_url:         item ? item.image_url : null,
+  quantity:               form.quantity,
+});
 
       if (dbErr) throw new Error(dbErr.message);
       setDone(true);
