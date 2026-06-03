@@ -111,6 +111,11 @@ export function CheckoutModal({ item, onClose, onSuccess }: Props) {
   }
 
   /* ── Submit ─────────────────────────────────────────────── */
+  // Add this right at the start of your submit function
+if (!item) {
+  console.error("No item selected");
+  return;
+}
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError("");
