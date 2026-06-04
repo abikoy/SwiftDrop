@@ -15,20 +15,19 @@ export async function placeOrder(values: OrderFormValues) {
     return { error: "You must be logged in to place an order." };
   }
 
-  // Cast values to any to stop TypeScript from checking the specific fields on insertion
-  const formPayload = values as any;
+  // 1. Cast the whole object to 'any' at the top so TypeScript stops strict checks inside the insert payload
+  const payload = values as any;
 
   const { error } = await supabase.from("orders").insert({
     user_id: user.id,
-    customer_name: (formPayload.customer_name || "").trim(),
-    phone_number: (formPayload.phone_number || "").trim(),
-    delivery_address: (formPayload.delivery_address || "").trim(),
-    landmark: (formPayload.landmark || "").trim() || null,
-    // @ts-ignore
-    food_items_description: (formPayload.food_items_description || "").trim() || "Selected Item",
-    payment_method: formPayload.payment_method,
-    total_estimated_price: formPayload.total_estimated_price
-      ? parseFloat(formPayload.total_estimated_price)
+    customer_name: (payload.customer_name || "").trim(),
+    phone_number: (payload.phone_number || "").trim(),
+    delivery_address: (payload.delivery_address || "").trim(),
+    landmark: (payload.landmark || "").trim() || null,
+    food_items_description: (payload.food_items_description || "").trim() || "Selected Item",
+    payment_method: payload.payment_method,
+    total_estimated_price: payload.total_estimated_price
+      ? parseFloat(payload.total_estimated_price)
       : null,
     order_status: "Pending",
   });
@@ -47,6 +46,7 @@ export async function updateOrderStatus(
 ) {
   const supabase = await createClient();
 
+  // Verify admin
   const {
     data: { user },
   } = await supabase.auth.getUser();
