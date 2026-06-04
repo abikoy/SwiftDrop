@@ -21,7 +21,7 @@ export async function placeOrder(values: OrderFormValues) {
     phone_number: values.phone_number.trim(),
     delivery_address: values.delivery_address.trim(),
     landmark: values.landmark.trim() || null,
-    food_items_description: values.food_items_description.trim(),
+    food_items_description: (values as any).food_items_description ? (values as any).food_items_description.trim() : "Selected Item",
     payment_method: values.payment_method,
     total_estimated_price: values.total_estimated_price
       ? parseFloat(values.total_estimated_price)
