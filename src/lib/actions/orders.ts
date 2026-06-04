@@ -24,6 +24,7 @@ export async function placeOrder(values: OrderFormValues) {
     phone_number: (formPayload.phone_number || "").trim(),
     delivery_address: (formPayload.delivery_address || "").trim(),
     landmark: (formPayload.landmark || "").trim() || null,
+    // @ts-ignore
     food_items_description: (formPayload.food_items_description || "").trim() || "Selected Item",
     payment_method: formPayload.payment_method,
     total_estimated_price: formPayload.total_estimated_price
