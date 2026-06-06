@@ -14,6 +14,7 @@ import { createClient } from "@/lib/supabase/client";
 import { uploadFile, deleteStorageFile } from "@/lib/storage";
 import { StatusBadge } from "@/components/dashboard/StatusBadge";
 import { cn } from "@/lib/utils";
+import { MENU_CATEGORIES } from "@/lib/categories";
 import type { Order, OrderStatus, MenuItem } from "@/types";
 
 /* ── Constants ───────────────────────────────────────────── */
@@ -123,7 +124,12 @@ export default function AdminPage() {
   const [togglingId, setTogglingId]     = useState<string | null>(null);
 
   /* New item form */
-  const [newItem, setNewItem] = useState({ name: "", description: "", price: "" });
+  const [newItem, setNewItem] = useState({
+    name: "",
+    description: "",
+    price: "",
+    category: "Other",
+  });
   const [imageFile, setImageFile]       = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [formError, setFormError]       = useState("");
@@ -225,12 +231,13 @@ export default function AdminPage() {
         description:  newItem.description.trim(),
         price,
         image_url,
+        category:     newItem.category,
         availability: true,
       });
 
       if (error) throw new Error(error.message);
 
-      setNewItem({ name: "", description: "", price: "" });
+      setNewItem({ name: "", description: "", price: "", category: "Other" });
       clearImage();
       fetchMenu();
     } catch (err: unknown) {
@@ -343,7 +350,7 @@ export default function AdminPage() {
         </div>
 
         {/* ═══════════════════════════════════════════════════ */}
-        {/* TAB: LIVE ORDERS                                   */}
+        {/* TAB: LIVE ORDERS                                    */}
         {/* ═══════════════════════════════════════════════════ */}
         {activeTab === "orders" && (
           <div>
@@ -363,8 +370,8 @@ export default function AdminPage() {
 
             {/* Stats */}
             <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
-              <Stat label="Pending"       value={pending}                   sub="Need action"      icon={Clock}       iconCls="bg-yellow-500/10 text-yellow-400" />
-              <Stat label="Active"        value={active}                    sub="In progress"      icon={Bike}        iconCls="bg-[#FF6B00]/15 text-[#FF8C33]" />
+              <Stat label="Pending"       value={pending}                  sub="Need action"      icon={Clock}       iconCls="bg-yellow-500/10 text-yellow-400" />
+              <Stat label="Active"        value={active}                    sub="In progress"      icon={Bike}         iconCls="bg-[#FF6B00]/15 text-[#FF8C33]" />
               <Stat label="Delivered"     value={delivered}                 sub="Completed"        icon={CheckCircle2} iconCls="bg-[#16A34A]/15 text-[#22C55E]" />
               <Stat label="Revenue (ETB)" value={revenue.toLocaleString()}  sub="Delivered orders" icon={TrendingUp}  iconCls="bg-blue-500/10 text-blue-400" />
               <Stat label="Customers"     value={customers}                 sub="Unique phones"    icon={Users}       iconCls="bg-purple-500/10 text-purple-400" />
@@ -601,214 +608,214 @@ export default function AdminPage() {
         )}
 
         {/* ═══════════════════════════════════════════════════ */}
-        {/* TAB: MENU MANAGEMENT                              */}
+        {/* TAB: MENU MANAGEMENT                                */}
         {/* ═══════════════════════════════════════════════════ */}
         {activeTab === "menu" && (
-          <div className="space-y-8">
-
-            {/* Add item form */}
-            <div className="glass-card rounded-2xl p-6 md:p-8">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-10 h-10 rounded-xl bg-[#FF6B00]/15 border border-[#FF6B00]/25 flex items-center justify-center">
-                  <Plus className="w-5 h-5 text-[#FF6B00]" />
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            
+            {/* Left/Middle Column: Form wrapper layout */}
+            <div className="lg:col-span-1 space-y-6">
+              <div className="glass-card rounded-2xl p-6 md:p-8">
+                <div className="flex items-center gap-2.5 mb-5">
+                  <div className="w-8 h-8 rounded-xl bg-[#FF6B00]/10 flex items-center justify-center text-[#FF6B00]">
+                    <Plus className="w-4 h-4" />
+                  </div>
+                  <h2 className="text-lg font-bold text-white">Add New Item</h2>
                 </div>
-                <div>
-                  <h2 className="font-display text-lg font-bold text-white">Add New Item</h2>
-                  <p className="text-xs text-[#6B7280]">New items appear on the customer menu instantly.</p>
-                </div>
-              </div>
 
-              {formError && (
-                <div className="flex items-center gap-2 bg-red-500/10 border border-red-500/25 rounded-xl px-4 py-3 mb-5 text-sm text-red-400">
-                  <AlertCircle className="w-4 h-4 flex-shrink-0" />
-                  {formError}
-                </div>
-              )}
+                {formError && (
+                  <div className="flex items-center gap-2 bg-red-500/10 border border-red-500/25 rounded-xl px-4 py-3 mb-5 text-sm text-red-400">
+                    <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                    {formError}
+                  </div>
+                )}
 
-              <form onSubmit={handleAddItem} className="space-y-4">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {/* The Integrated Form inputs layout */}
+                <form onSubmit={handleAddItem} className="space-y-4">
                   <div>
-                    <label className="block text-xs font-medium text-[#9CA3AF] mb-1.5">
-                      Item Name <span className="text-[#FF6B00]">*</span>
-                    </label>
-                    <input value={newItem.name}
+                    <label className="block text-xs font-medium text-[#9CA3AF] mb-1.5">Item Name</label>
+                    <input
+                      type="text"
+                      value={newItem.name}
                       onChange={(e) => setNewItem((n) => ({ ...n, name: e.target.value }))}
-                      placeholder="e.g. Special Tibs" className={inputCls} />
+                      placeholder="e.g. Special Burger"
+                      className={inputCls}
+                    />
                   </div>
+
+                  <div>
+                    <label className="block text-xs font-medium text-[#9CA3AF] mb-1.5">Description</label>
+                    <input
+                      value={newItem.description}
+                      onChange={(e) => setNewItem((n) => ({ ...n, description: e.target.value }))}
+                      placeholder="Short description of the dish..." 
+                      className={inputCls} 
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-medium text-[#9CA3AF] mb-1.5">Price (ETB)</label>
+                    <input
+                      type="number"
+                      value={newItem.price}
+                      onChange={(e) => setNewItem((n) => ({ ...n, price: e.target.value }))}
+                      placeholder="0.00"
+                      className={inputCls}
+                    />
+                  </div>
+
                   <div>
                     <label className="block text-xs font-medium text-[#9CA3AF] mb-1.5">
-                      Price (ETB) <span className="text-[#FF6B00]">*</span>
+                      Category <span className="text-[#FF6B00]">*</span>
                     </label>
-                    <input value={newItem.price}
-                      onChange={(e) => setNewItem((n) => ({ ...n, price: e.target.value }))}
-                      type="number" min="0" step="0.01" placeholder="e.g. 280" className={inputCls} />
+                    <div className="relative">
+                      <select
+                        value={newItem.category}
+                        onChange={(e) => setNewItem((n) => ({ ...n, category: e.target.value }))}
+                        className={inputCls + " appearance-none cursor-pointer pr-10"}
+                      >
+                        {MENU_CATEGORIES.map((cat) => (
+                          <option key={cat.value} value={cat.value}>
+                            {cat.label}
+                          </option>
+                        ))}
+                      </select>
+                      <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#4B5563] pointer-events-none" />
+                    </div>
                   </div>
-                </div>
 
-                <div>
-                  <label className="block text-xs font-medium text-[#9CA3AF] mb-1.5">Description</label>
-                  <input value={newItem.description}
-                    onChange={(e) => setNewItem((n) => ({ ...n, description: e.target.value }))}
-                    placeholder="Short description of the dish..." className={inputCls} />
-                </div>
-
-                {/* Image upload */}
-                <div>
-                  <label className="block text-xs font-medium text-[#9CA3AF] mb-1.5">
-                    Food Photo <span className="text-[#FF6B00]">*</span>
-                  </label>
-
-                  {imagePreview ? (
-                    /* Preview */
-                    <div className="relative rounded-2xl overflow-hidden border border-white/[0.08] bg-[#0D0F14]">
-                      <img src={imagePreview} alt="Preview"
-                        className="w-full h-48 object-cover" />
-                      <button type="button" onClick={clearImage}
-                        className="absolute top-3 right-3 w-8 h-8 rounded-xl bg-black/70 backdrop-blur-sm flex items-center justify-center text-white hover:bg-red-500/80 transition-colors">
-                        <X className="w-4 h-4" />
-                      </button>
-                      <div className="px-4 py-2.5 bg-[#0D0F14] border-t border-white/[0.06] flex items-center gap-2">
-                        <ImageIcon className="w-3.5 h-3.5 text-[#22C55E]" />
-                        <p className="text-xs text-[#9CA3AF] truncate flex-1">{imageFile?.name}</p>
-                        <p className="text-[11px] text-[#22C55E] font-medium flex-shrink-0">✓ Ready</p>
-                      </div>
-                    </div>
-                  ) : (
-                    /* Drop zone */
-                    <div
+                  <div>
+                    <label className="block text-xs font-medium text-[#9CA3AF] mb-1.5">Food Photo</label>
+                    <input
+                      type="file"
+                      ref={imageInputRef}
+                      onChange={handleImageChange}
+                      accept="image/*"
+                      className="hidden"
+                    />
+                    <div 
                       onClick={() => imageInputRef.current?.click()}
-                      className="flex flex-col items-center justify-center gap-3 border-2 border-dashed border-white/[0.12] hover:border-[#FF6B00]/40 rounded-2xl py-10 px-4 cursor-pointer transition-all duration-200 bg-[#0D0F14] hover:bg-[#FF6B00]/[0.03] group"
+                      className="border-2 border-dashed border-white/[0.08] hover:border-[#FF6B00]/40 rounded-xl p-6 text-center cursor-pointer transition-colors"
                     >
-                      <div className="w-12 h-12 rounded-xl bg-[#1A2035] border border-white/[0.08] flex items-center justify-center group-hover:border-[#FF6B00]/30 transition-colors">
-                        <Upload className="w-6 h-6 text-[#9CA3AF] group-hover:text-[#FF6B00] transition-colors" />
-                      </div>
-                      <div className="text-center">
-                        <p className="text-sm font-semibold text-white">Click to upload food photo</p>
-                        <p className="text-xs text-[#6B7280] mt-0.5">PNG, JPG or WEBP — max {MAX_IMAGE_MB} MB</p>
-                      </div>
+                      {imagePreview ? (
+                        <div className="relative w-24 h-24 mx-auto">
+                          <img src={imagePreview} alt="Preview" className="w-full h-full object-cover rounded-xl" />
+                          <button type="button" onClick={(e) => { e.stopPropagation(); clearImage(); }} className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1"><X className="w-3 h-3" /></button>
+                        </div>
+                      ) : (
+                        <div className="text-sm text-[#6B7280]">Click to upload photo</div>
+                      )}
                     </div>
-                  )}
+                  </div>
 
-                  <input ref={imageInputRef} type="file" accept="image/*"
-                    className="hidden" onChange={handleImageChange} />
-                </div>
-
-                <button type="submit" disabled={menuSaving}
-                  className="btn-orange flex items-center gap-2 px-6 py-3 text-sm disabled:opacity-60 disabled:cursor-not-allowed disabled:transform-none">
-                  {menuSaving
-                    ? <><Loader2 className="w-4 h-4 animate-spin" /> Uploading & saving...</>
-                    : <><Save className="w-4 h-4" /> Add to Menu</>
-                  }
-                </button>
-              </form>
+                  <button
+                    type="submit"
+                    disabled={menuSaving}
+                    className="w-full flex items-center justify-center gap-2 bg-[#FF6B00] hover:bg-[#E05E00] text-white font-semibold py-3 rounded-xl shadow-[0_4px_12px_rgba(255,107,0,0.2)] transition-all disabled:opacity-50"
+                  >
+                    {menuSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                    Save Item
+                  </button>
+                </form>
+              </div>
             </div>
 
-            {/* Current menu list */}
-            <div>
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="font-display text-xl font-bold text-white">
-                  Current Menu
-                  <span className="ml-2 text-sm font-normal text-[#6B7280]">
-                    ({menuItems.length} item{menuItems.length !== 1 ? "s" : ""})
-                  </span>
-                </h2>
-                <button onClick={fetchMenu}
-                  className="flex items-center gap-1.5 text-xs text-[#9CA3AF] hover:text-white transition-colors">
-                  <RefreshCw className="w-3.5 h-3.5" /> Refresh
-                </button>
+            {/* Right Side Column: Active Menu list rows mapping layout */}
+            <div className="lg:col-span-2 space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="text-sm font-bold text-[#9CA3AF] uppercase tracking-wider">Active Menu ({menuItems.length})</h3>
+                {menuError && <p className="text-xs text-red-400">{menuError}</p>}
               </div>
-
-              {menuError && (
-                <div className="flex items-center gap-2 bg-red-500/10 border border-red-500/25 rounded-xl px-4 py-3 mb-4 text-sm text-red-400">
-                  <AlertCircle className="w-4 h-4 flex-shrink-0" />
-                  {menuError}
-                </div>
-              )}
 
               {menuLoading ? (
                 <div className="flex items-center justify-center py-16">
                   <Loader2 className="w-6 h-6 animate-spin text-[#FF6B00]" />
                 </div>
               ) : menuItems.length === 0 ? (
-                <div className="glass-card rounded-2xl p-14 text-center">
-                  <UtensilsCrossed className="w-10 h-10 text-[#6B7280] mx-auto mb-3" />
-                  <p className="text-white font-semibold mb-1">No menu items yet</p>
-                  <p className="text-[#6B7280] text-sm">Use the form above to add your first item.</p>
+                <div className="glass-card rounded-2xl p-12 text-center text-[#6B7280]">
+                  <UtensilsCrossed className="w-8 h-8 mx-auto mb-2 opacity-60" />
+                  <p className="text-sm font-semibold text-white">No items added yet</p>
+                  <p className="text-xs mt-0.5">Use the form to fill your menu catalog.</p>
                 </div>
               ) : (
                 <div className="space-y-2.5">
-                  {menuItems.map((item) => (
-                    <div key={item.id}
-                      className={cn(
-                        "flex items-center gap-4 bg-[#111827] border rounded-2xl px-4 py-3.5 transition-all duration-200",
-                        item.availability ? "border-white/[0.07]" : "border-white/[0.04] opacity-60"
-                      )}>
+                  {menuItems.map((item) => {
+                    const isDeleting = deletingId === item.id;
+                    const isToggling = togglingId === item.id;
 
-                      {/* Food image thumbnail */}
-                      <div className="w-14 h-14 rounded-xl overflow-hidden bg-[#1A2035] border border-white/[0.08] flex-shrink-0">
-                        {item.image_url ? (
-                          <img src={item.image_url} alt={item.name}
-                            className="w-full h-full object-cover" />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center">
-                            <ImageOff className="w-5 h-5 text-[#6B7280]" />
+                    return (
+                      <div key={item.id} className="glass-card rounded-xl p-3.5 flex items-center justify-between gap-4 border border-white/[0.02]">
+                        <div className="flex items-center gap-3.5 min-w-0">
+                          <div className="w-12 h-12 rounded-xl overflow-hidden bg-[#1A2035] border border-white/[0.08] flex-shrink-0">
+                            {item.image_url ? (
+                              <img src={item.image_url} alt={item.name} className="w-full h-full object-cover" />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center text-xl">🍽️</div>
+                            )}
                           </div>
-                        )}
-                      </div>
 
-                      {/* Info */}
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <p className="font-semibold text-white text-sm">{item.name}</p>
-                          {!item.availability && (
-                            <span className="text-[10px] bg-red-500/15 text-red-400 border border-red-500/20 px-2 py-0.5 rounded-full font-medium">
-                              Hidden
-                            </span>
-                          )}
+                          {/* REPLACED BLOCK WITH DYNAMIC CATEGORY BADGES */}
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <p className="font-semibold text-white text-sm">{item.name}</p>
+                              
+                              {item.category && (
+                                <span className="text-[10px] bg-white/[0.06] text-[#9CA3AF] border border-white/[0.08] px-2 py-0.5 rounded-full">
+                                  {item.category}
+                                </span>
+                              )}
+
+                              {!item.availability && (
+                                <span className="text-[10px] bg-red-500/15 text-red-400 border border-red-500/20 px-2 py-0.5 rounded-full font-medium">
+                                  Hidden
+                                </span>
+                              )}
+                            </div>
+                            {item.description && (
+                              <p className="text-xs text-[#6B7280] mt-0.5 truncate">{item.description}</p>
+                            )}
+                            <p className="text-sm font-bold text-[#FF6B00] mt-0.5">
+                              ETB {item.price.toLocaleString()}
+                            </p>
+                          </div>
                         </div>
-                        {item.description && (
-                          <p className="text-xs text-[#6B7280] mt-0.5 truncate">{item.description}</p>
-                        )}
-                        <p className="text-sm font-bold text-[#FF6B00] mt-0.5">
-                          ETB {item.price.toLocaleString()}
-                        </p>
-                      </div>
 
-                      {/* Actions */}
-                      <div className="flex items-center gap-2 flex-shrink-0">
-                        <button
-                          onClick={() => toggleAvailability(item)}
-                          disabled={togglingId === item.id}
-                          className={cn(
-                            "flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold border transition-all duration-200 disabled:opacity-40 whitespace-nowrap",
-                            item.availability
-                              ? "border-[#22C55E]/25 bg-[#16A34A]/8 text-[#22C55E] hover:bg-[#16A34A]/15"
-                              : "border-white/[0.08] bg-white/[0.03] text-[#9CA3AF] hover:text-white"
-                          )}>
-                          {togglingId === item.id
-                            ? <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                            : item.availability
-                              ? <ToggleRight className="w-3.5 h-3.5" />
-                              : <ToggleLeft className="w-3.5 h-3.5" />
-                          }
-                          {item.availability ? "Available" : "Hidden"}
-                        </button>
-
-                        <button
-                          onClick={() => deleteItem(item)}
-                          disabled={deletingId === item.id}
-                          className="w-8 h-8 rounded-xl border border-white/[0.08] bg-white/[0.03] flex items-center justify-center text-[#6B7280] hover:text-red-400 hover:border-red-500/30 hover:bg-red-500/8 transition-all disabled:opacity-40">
-                          {deletingId === item.id
-                            ? <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                            : <Trash2 className="w-3.5 h-3.5" />
-                          }
-                        </button>
+                        {/* Interactive Status Toggles and action layout elements */}
+                        <div className="flex items-center gap-1.5 flex-shrink-0">
+                          <button
+                            onClick={() => toggleAvailability(item)}
+                            disabled={isToggling}
+                            title={item.availability ? "Mute availability" : "Make available"}
+                            className="w-8 h-8 rounded-xl bg-white/[0.03] border border-white/[0.06] flex items-center justify-center text-[#9CA3AF] hover:text-white hover:bg-white/[0.08] transition-all disabled:opacity-40"
+                          >
+                            {isToggling ? (
+                              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                            ) : item.availability ? (
+                              <ToggleRight className="w-5 h-5 text-[#22C55E]" />
+                            ) : (
+                              <ToggleLeft className="w-5 h-5 text-[#4B5563]" />
+                            )}
+                          </button>
+                          
+                          <button
+                            onClick={() => deleteItem(item)}
+                            disabled={isDeleting}
+                            className="w-8 h-8 rounded-xl bg-red-500/5 hover:bg-red-500/15 border border-red-500/10 text-red-400 hover:text-red-300 flex items-center justify-center transition-all disabled:opacity-40"
+                          >
+                            {isDeleting ? (
+                              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                            ) : (
+                              <Trash2 className="w-3.5 h-3.5" />
+                            )}
+                          </button>
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </div>
+
           </div>
         )}
       </div>

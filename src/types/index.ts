@@ -52,7 +52,8 @@ export interface MenuItem {
   name: string;
   description: string;
   price: number;
-  image_url: string;           // from Supabase Storage
+  image_url: string;
+  category: string;
   availability: boolean;
   created_at: string;
 }

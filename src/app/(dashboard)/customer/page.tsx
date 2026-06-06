@@ -6,16 +6,21 @@ import {
   MapPin, CreditCard, Loader2, UtensilsCrossed, WifiOff,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import { cn } from "@/lib/utils";
+
 import { FoodCard } from "@/components/customer/FoodCard";
 import { CheckoutModal } from "@/components/customer/CheckoutModal";
 import { StatusBadge } from "@/components/dashboard/StatusBadge";
 import type { MenuItem, Order } from "@/types";
+import { FILTER_CATEGORIES } from "@/lib/categories";
+
 
 export default function CustomerPage() {
   const [menuItems, setMenuItems]       = useState<MenuItem[]>([]);
   const [menuLoading, setMenuLoading]   = useState(true);
   const [menuError, setMenuError]       = useState("");
-  const [search, setSearch]             = useState("");
+const [search, setSearch]           = useState("");
+const [activeCategory, setActiveCategory] = useState("All");
   const [selectedItem, setSelectedItem] = useState<MenuItem | null>(null);
   const [orders, setOrders]             = useState<Order[]>([]);
   const [ordersLoading, setOrdersLoading] = useState(true);
@@ -72,9 +77,14 @@ export default function CustomerPage() {
   }, [fetchMenu, fetchOrders, supabase]);
 
   const filtered = menuItems.filter((item) => {
-    const q = search.toLowerCase();
-    return !q || item.name.toLowerCase().includes(q) || item.description.toLowerCase().includes(q);
-  });
+  const q = search.toLowerCase();
+  const matchSearch = !q ||
+    item.name.toLowerCase().includes(q) ||
+    item.description.toLowerCase().includes(q);
+  const matchCategory =
+    activeCategory === "All" || item.category === activeCategory;
+  return matchSearch && matchCategory;
+});
 
   function handleOrderSuccess() {
     setSuccessPulse(true);
@@ -126,6 +136,28 @@ export default function CustomerPage() {
             className="w-full bg-[#1A2035] border border-white/[0.08] rounded-xl pl-11 pr-4 py-3 text-white text-sm placeholder:text-[#4B5563] outline-none focus:border-[#FF6B00]/50 transition-all"
           />
         </div>
+
+</div>
+
+{/* Category filter pills */}
+<div className="flex items-center gap-2 overflow-x-auto pb-2 mb-4 scrollbar-hide -mx-1 px-1">
+  {FILTER_CATEGORIES.map((cat) => (
+    <button
+      key={cat.value}
+      onClick={() => setActiveCategory(cat.value)}
+      className={cn(
+        "flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition-all duration-200 border flex-shrink-0",
+        activeCategory === cat.value
+          ? "bg-[#FF6B00]/15 border-[#FF6B00]/35 text-[#FF6B00] shadow-[0_0_12px_rgba(255,107,0,0.15)]"
+          : "bg-white/[0.03] border-white/[0.07] text-[#9CA3AF] hover:text-white hover:bg-white/[0.06]"
+      )}
+    >
+      {cat.label}
+    </button>
+  ))}
+</div>
+
+{/* Menu grid */}
 
         {/* Menu grid */}
         {menuLoading ? (
@@ -253,7 +285,7 @@ export default function CustomerPage() {
             </div>
           )}
         </div>
-      </div>
+      
 
       {/* Checkout modal */}
       <CheckoutModal
